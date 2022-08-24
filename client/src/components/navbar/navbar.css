@@ -1,0 +1,161 @@
+.navbar{
+  display: flex;
+  justify-content: center;
+  background-color: #08263D;
+  width: 100%;
+  border: none;
+  align-items: center;
+  margin: 0px;
+  text-align: center;
+  font-family: "Comic Sans MS", "Comic Sans", cursive;
+}
+
+.nav_name {
+  margin-top: 80px;
+  font-size: 70px;
+  color:white;
+  cursor: default;
+  letter-spacing: 5px;
+}
+
+.nav_header{
+  background-image: linear-gradient(90deg, #00000000, rgba(255,255,255,0.03));
+  width: 100%;
+  padding: 10px 20px;
+  display: flex;
+  justify-content: right;
+}
+
+.authbar{
+  display: flex;
+  justify-content: center;
+  margin-left: auto;
+}
+
+.nav_auth{
+  font-size: 20px;
+  font-weight: 500;
+  color:white;
+  text-align: right;
+  cursor: default;
+  margin: auto 10px;
+}
+
+.nav_registration {
+  text-align: center;
+  margin-right: 50px;
+  font-size: 15px;
+  font-weight: 700;
+  color: white;
+  background-color: white;
+  cursor: pointer;
+  border-radius: 7px;
+  transition: all .15s ease-in-out;
+  border: 2px solid #00000000;
+  width: 120px;
+  text-decoration: none;
+}
+
+.nav_registration:hover {
+  border: 2px solid #226A9E;
+  background-color: #00000000;
+  color: #226A9E;
+}
+
+.nav_login {
+  text-align: center;
+  margin-right: 10px;
+  font-size: 15px;
+  font-weight: 700;
+  color: white;
+  background-color:#226A9E;
+  cursor: pointer;
+  border-radius: 7px;
+  transition: all .15s ease-in-out;
+  border: 2px solid #00000000;
+  width: 120px;
+  text-decoration: none;
+}
+
+.nav_login:hover {
+  border: 2px solid #226A9E;
+  background-color: #00000000;
+  color: #226A9E;
+}
+
+.nav_ver_line {
+  margin: auto 10px;
+  font-size: 20px;
+  color:lightgray;
+}
+
+
+
+.nav_top {
+  height: 500px;
+  width: 100%;
+  background-image: linear-gradient(45deg, #1B2749, #5C0B87);
+  position: relative;
+}
+
+.custom-shape-divider-bottom-1660104785 {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  overflow: hidden;
+  line-height: 0;
+  transform: rotate(180deg);
+}
+
+.custom-shape-divider-bottom-1660104785 svg {
+  position: relative;
+  display: block;
+  width: calc(147% + 1.3px);
+  height: 167px;
+}
+
+.custom-shape-divider-bottom-1660104785 .shape-fill {
+  fill: #FFFFFF;
+}
+
+
+.nav_log_out {
+  font-size: 20px;
+  font-weight: 500;
+  text-decoration: none;
+  background-color: #00000000;
+  float: right;
+  border: 0;
+  border-radius: 10px;
+  box-sizing: border-box;
+  color: white;
+  cursor: pointer;
+  line-height: 1em;
+  opacity: 1;
+  padding: 10px;
+  position: relative;
+  text-align: center;
+  transition: opacity 300ms cubic-bezier(.694, 0, 0.335, 1),background-color 100ms cubic-bezier(.694, 0, 0.335, 1),color 100ms cubic-bezier(.694, 0, 0.335, 1);
+}
+
+.nav_log_out:before {
+  border-radius: 10px;
+  animation: opacityFallbackOut .5s step-end forwards;
+  backface-visibility: hidden;
+  background-color: rgba(255,255,255,0.1);
+  clip-path: polygon(-1% 0, 0 0, -25% 100%, -1% 100%);
+  content: "";
+  height: 100%;
+  left: 0;
+  position: absolute;
+  top: 0;
+  transform: translateZ(0);
+  transition: clip-path .5s cubic-bezier(.165, 0.84, 0.44, 1), -webkit-clip-path .5s cubic-bezier(.165, 0.84, 0.44, 1);
+  width: 100%;
+}
+
+.nav_log_out:hover:before {
+  animation: opacityFallbackIn 0s step-start forwards;
+  clip-path: polygon(0 0, 101% 0, 101% 101%, 0 101%);
+}
