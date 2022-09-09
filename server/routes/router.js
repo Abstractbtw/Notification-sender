@@ -32,8 +32,7 @@ router.post('/registration',
     return res.json()
 
   } catch (e) {
-    console.log(e)
-    res.send({message: "Server error"})
+    return next()
   }
 })
 
@@ -60,8 +59,7 @@ router.post('/login', async (req, res) => {
 
 
   } catch (e) {
-    console.log(e)
-    res.send({message: "Server error"})
+    return next()
   }
 })
 
@@ -72,15 +70,7 @@ router.post('/addtask',
 
   try {
 
-    const {name, user} = req.body
-    const desc = ""
-    const to = ""
-    const finishDate = ""
-    const offset = 0
-    const offsetTime = 0
-    const status = "todo"
-    const folder = "default"
-    const active = "inactive"
+    const {name, user, desc, to, finishDate, offset, offsetTime, status, folder, active} = req.body
 
     const task = new Task({
       user_email: user,
@@ -100,8 +90,7 @@ router.post('/addtask',
     return res.json()
 
   } catch (e) {
-    console.log(e)
-    res.send({message: "Server error"})
+    return next()
   }
 })
 
@@ -114,8 +103,6 @@ router.post('/addfolder',
 
     const {name, user} = req.body
 
-    console.log(name)
-
     const folder = new Folder({
       name: name,
       user_email: user
@@ -125,8 +112,7 @@ router.post('/addfolder',
     return res.json()
 
   } catch (e) {
-    console.log(e)
-    res.send({message: "Server error"})
+    return next()
   }
 })
 
@@ -137,20 +123,19 @@ router.post('/changefolder',
 
   try {
 
-    const {folder, ind} = req.body
+    const {info, ind} = req.body
 
     await Task.findOneAndUpdate({
       _id: ObjectId(ind)
     }, {
-        folder: folder
+        folder: info
     })
 
 
     return res.json()
 
   } catch (e) {
-    console.log(e)
-    res.send({message: "Server error"})
+    return next()
   }
 })
 
@@ -161,20 +146,19 @@ router.post('/changestatus',
 
   try {
 
-    const {status, ind} = req.body
+    const {info, ind} = req.body
 
     await Task.findOneAndUpdate({
       _id: ObjectId(ind)
     }, {
-      status: status
+      status: info
     })
 
 
     return res.json()
 
   } catch (e) {
-    console.log(e)
-    res.send({message: "Server error"})
+    return next()
   }
 })
 
@@ -185,44 +169,42 @@ router.post('/changeactive',
 
   try {
 
-    const {active, ind} = req.body
+    const {info, ind} = req.body
 
     await Task.findOneAndUpdate({
       _id: ObjectId(ind)
     }, {
-      active: active
+      active: info
     })
 
 
     return res.json()
 
   } catch (e) {
-    console.log(e)
-    res.send({message: "Server error"})
+    return next()
   }
 })
 
 
 
-router.post('/updatetext',
+router.post('/changedesc',
   async (req, res) => {
 
   try {
 
-    const {text, ind} = req.body
+    const {info, ind} = req.body
 
     await Task.findOneAndUpdate({
       _id: ObjectId(ind)
     },{
-      desc: text
+      desc: info
     })
 
 
     return res.json()
 
   } catch (e) {
-    console.log(e)
-    res.send({message: "Server error"})
+    return next()
   }
 })
 
@@ -245,8 +227,7 @@ router.post('/addtime', async (req, res) => {
     return res.json()
 
   } catch (e) {
-    console.log(e)
-    res.send({message: "Server error"})
+    return next()
   }
 })
 
@@ -268,8 +249,7 @@ router.post('/setoffset', async (req, res) => {
     return res.json()
 
   } catch (e) {
-    console.log(e)
-    res.send({message: "Server error"})
+    return next()
   }
 })
 
@@ -292,10 +272,15 @@ router.post('/changeactive',
     return res.json()
 
   } catch (e) {
-    console.log(e)
-    res.send({message: "Server error"})
+    return next()
   }
 })
+
+
+
+router.use((error, req, res, next) => {
+  return res.status(500).json({ error: error.toString() });
+});
 
 
 

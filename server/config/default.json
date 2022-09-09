@@ -1,4 +1,5 @@
 {
   "serverPort" : 5000,
-  "dbUrl" : "mongodb+srv://Admin:admin@cluster0.1hc4oeb.mongodb.net/?retryWrites=true&w=majority"
+  "dbUrl" : "mongodb+srv://Admin:admin@cluster0.1hc4oeb.mongodb.net/?retryWrites=true&w=majority",
+  "URI_API" : "https://api.telegram.org/bot5420841806:AAGsrf7SpO_Nq6P0SVGZCU1A9b_nywPbWV0/sendMessage"
 }

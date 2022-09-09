@@ -7,11 +7,7 @@ import "react-datepicker/dist/react-datepicker.css"
 import AddTask from "../popups/AddTask"
 import AddFolder from "../popups/AddFolder"
 
-import {sendnote, changefolder, changestatus, changeactive, updatetext, addtime, setoffset} from "../../controllers/controller"
-
-var CronJob = require('cron').CronJob;
-
-let send = false
+import {updatefield, addtime, setoffset} from "../../controllers/controller"
 
 function Notificationlist(){
 
@@ -34,62 +30,22 @@ function Notificationlist(){
   const [finishDate, setFinishDate] = useState();
 
   useEffect(() => {
-    fetch(`${process.env.REACT_APP_API_URL}/tasks`, {
-      headers : { 
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-        }
-    })
+    fetch(`${process.env.REACT_APP_API_URL}/tasks`)
     .then(res => res.json())
-    .then(data => setNotes(data))
+    .then(setNotes)
   }, []);
 
   useEffect(() => {
-    fetch(`${process.env.REACT_APP_API_URL}/folders`, {
-      headers : { 
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-        }
-    })
+    fetch(`${process.env.REACT_APP_API_URL}/folders`)
     .then(res => res.json())
-    .then(data => setFolders(data))
+    .then(setFolders)
   }, []);
 
   useEffect(() => {
-    fetch(`${process.env.REACT_APP_API_URL}/users`, {
-      headers : { 
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-        }
-    })
+    fetch(`${process.env.REACT_APP_API_URL}/users`)
     .then(res => res.json())
-    .then(data => setUsers(data))
+    .then(setUsers)
   }, []);
-
-
-
-  var job = new CronJob(
-    '1 * * * * *',
-    function() {
-      const now = new Date()
-      notes.map(note => {
-        if(note.to && (Date.parse(note.to) - note.offsetTime <= Date.parse(now)) && note.active === "active" && !send){
-          users.map(user => {
-            if(note.user_email === user.email){
-              sendnote(user.telegram, note.name, note.desc, note.folder, note.status)
-              changeactive("inactive", note._id)
-              console.log("123")
-              send = true
-            }
-          })
-        }
-      })
-    },
-    null,
-    true
-  )
-
-
 
   const activeUserNotes = []
   notes.map(note => {
@@ -223,10 +179,10 @@ function Notificationlist(){
 
                               <div style={{display: "inline"}}>
                                 Folder: 
-                                <select defaultValue={note.folder} className="task_selector" style={{marginLeft: "5px", float: "right", marginRight: "10px"}} onChange={(event) => changefolder(event.target.value, note._id)}>
-                                  {activeUserFolders.map(folder => {
+                                <select defaultValue={note.folder} className="task_selector" style={{marginLeft: "5px", float: "right", marginRight: "10px"}} onChange={(event) => updatefield("folder", event.target.value, note._id)}>
+                                  {activeUserFolders.map((folder, index) => {
                                     return(
-                                      <option>{folder.name}</option>
+                                      <option key={index}>{folder.name}</option>
                                     )
                                   })}
                                 </select>
@@ -237,7 +193,7 @@ function Notificationlist(){
 
                               <div style={{display: "inline"}}>
                                 Status: 
-                                <select defaultValue={note.status} className="task_selector" style={{marginLeft: "5px", float: "right", marginRight: "10px"}} onChange={(event) => changestatus(event.target.value, note._id)}>
+                                <select defaultValue={note.status} className="task_selector" style={{marginLeft: "5px", float: "right", marginRight: "10px"}} onChange={(event) => updatefield("status", event.target.value, note._id)}>
                                     <option>todo</option>
                                     <option>inprogress</option>
                                     <option>done</option>
@@ -248,7 +204,7 @@ function Notificationlist(){
 
                               <div style={{display: "inline"}}>
                                 Active: 
-                                <select defaultValue={note.active} className="task_selector" style={{marginLeft: "5px", float: "right", marginRight: "10px"}} onChange={(event) => changeactive(event.target.value, note._id)}>
+                                <select defaultValue={note.active} className="task_selector" style={{marginLeft: "5px", float: "right", marginRight: "10px"}} onChange={(event) => updatefield("active", event.target.value, note._id)}>
                                     <option>active</option>
                                     <option>inactive</option>
                                 </select>
@@ -297,7 +253,7 @@ function Notificationlist(){
                               {editing ? (
                                 <>
                                   <button className="nav_log_out" style={{marginBottom: "5px"}} onClick={() => setEditingText(false)}>Cancel</button>
-                                  <button className="nav_log_out" style={{marginBottom: "5px", marginRight: '5px'}} onClick={() => (setEditingText(false), updatetext(document.getElementById("newtext").value, note._id))}>Save</button>
+                                  <button className="nav_log_out" style={{marginBottom: "5px", marginRight: '5px'}} onClick={() => (setEditingText(false), updatefield("desc", document.getElementById("newtext").value, note._id))}>Save</button>
                                 </>
                               ):(
                                 <button className="nav_log_out" style={{marginBottom: "5px"}} onClick={() => setEditingText(true)}>Edit</button>
@@ -330,9 +286,9 @@ function Notificationlist(){
 
                   <div style={{textAlign: "center"}}>
                     <select className="selector" onChange={(event) => setFolder(event.target.value)}>
-                      {activeUserFolders.map(folder => {
+                      {activeUserFolders.map((folder, index) => {
                         return(
-                          <option>{folder.name}</option>
+                          <option key={index}>{folder.name}</option>
                         )
                       })}
                     </select>
