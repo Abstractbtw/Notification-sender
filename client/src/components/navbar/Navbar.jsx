@@ -5,10 +5,11 @@ import {NavLink} from 'react-router-dom'
 
 function Navbar() {
 
-  const activeUser=localStorage.getItem('name')
+  const activeUser = localStorage.getItem('name')
 
-  const setUser = () => {
+  const clearUser = () => {
     localStorage.setItem('name', '')
+    localStorage.setItem('email', '')
     document.location.reload()
   }
 
@@ -25,7 +26,7 @@ function Navbar() {
           <div className="nav_header">
             <div className="nav_auth">Logged in as: {activeUser}</div>
             <div className="nav_ver_line">|</div>
-            <button onClick={setUser} className="nav_log_out" role="button"><span class="text">Log out</span></button>
+            <button onClick={clearUser} className="nav_log_out" role="button"><span className="text">Log out</span></button>
           </div>
         )}
         <div className="nav_name">Notification sender</div>

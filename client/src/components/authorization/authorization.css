@@ -1,9 +1,10 @@
 .auth_container{
   width: 100%;
   height: 100%;
-  background-color: #00000070;
+  background-color: #00000030;
   position: fixed;
-  margin-top: -500px;
+  top: 0;
+  left: 0;
   font-family: "Comic Sans MS", "Comic Sans", cursive;
 }
 
@@ -46,13 +47,6 @@
 
 .links{
   height: 48px;
-}
-
-.error_text{
-  font-size: 10px;
-  width: 100%;
-  text-align: left;
-  color: white;
 }
 
 .nav_log_out {

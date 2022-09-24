@@ -1,7 +1,11 @@
 import React, {useState, useEffect} from "react"
 import './authorization.css'
-import {registration} from '../../controllers/controller'
-import {Link} from 'react-router-dom'
+import { registration } from '../../controllers/controller'
+import { Link, useNavigate } from 'react-router-dom'
+import ErrorText from '../popups/ErrorText'
+import { omit } from 'lodash'
+
+const { getUsers } = require("../../service/service")
 
 const Registration = () => {
   
@@ -10,61 +14,97 @@ const Registration = () => {
   const [Useremail, setEmail] = useState("")
   const [Usertelegram, setTelegram] = useState("")
 
-  const [checkEmail, setCheckEmail] = useState(false)
-  const [checkUser, setCheckUser] = useState(false)
-  const [checkPass, setCheckPass] = useState(false)
+  const [validateInputs, setValidateInputs] = useState(false)
 
   const [users, setUsers] = useState([])
 
   useEffect(() => {
-    fetch(`${process.env.REACT_APP_API_URL}/users`, {
-      headers : { 
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-        }
-    })
-    .then(res => res.json())
-    .then(data => setUsers(data))
-    
+    getUsers().then((res) => setUsers(res.data))
   }, []);
 
-  function checkInputs(){
-    if(!(/\S+@\S+\.\S+/.test(Useremail))){
-      setCheckEmail(true)
+  const [errors, setErrors] = useState({})
+  const navigate = useNavigate()
+
+
+
+  const validate = (name, value) => {
+
+    switch(name){
+
+      case "email":
+
+        let exists
+        users.map(user => {
+          if(value === user.email){
+            exists = 1
+          }
+        })
+        if(exists || !(/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(value))){
+
+          setErrors({
+            ...errors,
+            email:"Value is not email or user already exists"
+          })
+          
+        } else {
+
+          let newObj = omit(errors, "email")
+          setErrors(newObj)
+
+        }
+        
+        break
+
+      case "pass":
+        if(value.length < 3 || value.length > 12){
+          setErrors({
+            ...errors,
+            pass:"Password must be longer than 3 and shorter than 12 symbols"
+          })
+          
+        } else {
+          let newObj = omit(errors, "pass")
+          setErrors(newObj)
+        }
+        break
+
+      default:
+        break
     }
-    users.map(user => {
-      if(Useremail === user.email){
-        setCheckUser(true)
-      }
-    })
-    if(Userpassword.length < 3 || Userpassword.length > 12){
-      setCheckPass(true)
+
+  }
+
+  const handleChange = (event) => {
+
+    let name = event.target.name
+    let val = event.target.value
+
+    validate(name, val)
+  }
+
+  const checkInputs = () => {
+    registration(Useremail, Username, Userpassword, Usertelegram)
+    if(Object.keys(errors).length){
+      return setValidateInputs(true)
+    } else {
+      return navigate("/")
     }
-    if(!checkEmail && !checkPass && !checkUser){
-      registration(Useremail, Username, Userpassword, Usertelegram)
-    }
+    
   }
 
   return (
     <div className="auth_container">
       <div className="auth">
         <div className="auth_header">Registration</div>
-        <input onChange={(event) => (setEmail(event.target.value), setCheckEmail(false), setCheckUser(false))} value={Useremail} className="auth_input" type="text" placeholder="Enter email"></input>
-        {checkEmail ? (
-          <div className="error_text">Value is not email</div>
-        ):("")}
-        {checkUser ? (
-          <div className="error_text">This user already exists</div>
-        ):("")}
-        <input onChange={(event) => setName(event.target.value)} value={Username} className="auth_input" type="text" placeholder="Enter name"></input>
-        <input onChange={(event) => (setPassword(event.target.value), setCheckPass(false))} value={Userpassword} className="auth_input" type="password" placeholder="Enter password"></input>
-        {checkPass ? (
-          <div className="error_text">Password must be longer than 3 and shorter than 12 symbols</div>
-        ):("")}
-        <input onChange={(event) => (setTelegram(event.target.value))} value={Usertelegram} className="auth_input" type="text" placeholder="Enter telegram ID"></input>
+        <input name="email" defaultValue={Useremail} className="auth_input" type="text" placeholder="Enter email" onChange={(event) => (handleChange(event), setEmail(event.target.value), setValidateInputs(false))}></input>
+          {validateInputs && <ErrorText trigger={errors.email} message={errors.email} />}
+        <input defaultValue={Username} className="auth_input" type="text" placeholder="Enter name" onChange={(event) => setName(event.target.value)}></input>
+        <input name="pass" defaultValue={Userpassword} className="auth_input" type="password" placeholder="Enter password" onChange={(event) => (handleChange(event), setPassword(event.target.value), setValidateInputs(false))}></input>
+          {validateInputs && <ErrorText trigger={errors.pass} message={errors.pass} />}
+        <input onChange={(event) => (setTelegram(event.target.value))} defaultValue={Usertelegram} className="auth_input" type="text" placeholder="Enter telegram ID"></input>
         <div className="links">
           {Useremail && Username && Userpassword && Usertelegram ? (
-            <button className="nav_log_out" style={{float: "left"}} onClick={() => (checkInputs())}>Sign in</button>
+            <button className="nav_log_out" style={{float: "left"}} onClick={checkInputs}>Sign in</button>
           ):(
             <button className="nav_log_out" style={{float: "left", color: "#ffffff30"}} disabled>Sign in</button>
           )}

@@ -4,10 +4,20 @@ import DatePicker from "react-datepicker"
 import TimePicker from "react-time-picker/dist/entry.nostyle"
 import "react-datepicker/dist/react-datepicker.css"
 
-import AddTask from "../popups/AddTask"
-import AddFolder from "../popups/AddFolder"
+import {AddTask} from "../popups/Popups"
+import {AddFolder} from "../popups/Popups"
+import Notes from "./Notes"
+import ErrorText from '../popups/ErrorText'
 
-import {updatefield, addtime, setoffset} from "../../controllers/controller"
+import {FolderSelector} from "./Selectors"
+import {StatusSelector} from "./Selectors"
+import {ActiveSelector} from "./Selectors"
+import Navbar from "../navbar/Navbar"
+
+import {updatefield, addtime, settimer} from "../../controllers/controller"
+
+const {getNotes} = require("../../service/service")
+const {getFolders} = require("../../service/service")
 
 function Notificationlist(){
 
@@ -16,7 +26,6 @@ function Notificationlist(){
 
   const [notes, setNotes] = useState([])
   const [folders, setFolders] = useState([])
-  const [users, setUsers] = useState([])
 
   const [showAdd, setShowAdd] = useState(false)
   const [showFolder, setShowFolder] = useState(false)
@@ -30,35 +39,27 @@ function Notificationlist(){
   const [finishDate, setFinishDate] = useState();
 
   useEffect(() => {
-    fetch(`${process.env.REACT_APP_API_URL}/tasks`)
-    .then(res => res.json())
-    .then(setNotes)
+    getNotes().then((res) => setNotes(res.data))
   }, []);
 
   useEffect(() => {
-    fetch(`${process.env.REACT_APP_API_URL}/folders`)
-    .then(res => res.json())
-    .then(setFolders)
+    getFolders().then((res) => setFolders(res.data))
   }, []);
-
-  useEffect(() => {
-    fetch(`${process.env.REACT_APP_API_URL}/users`)
-    .then(res => res.json())
-    .then(setUsers)
-  }, []);
-
-  const activeUserNotes = []
-  notes.map(note => {
-    if(note.user_email === activeEmail){
-      activeUserNotes.push(note)
-    }
-  })
 
   const activeUserFolders = []
   folders.map(folder => {
     if(folder.user_email === activeEmail){
       activeUserFolders.push(folder)
     }
+  })
+
+  const activeUserNotes = []
+  notes.map(note => {
+    activeUserFolders.map(folder => {
+      if(note.folderId === folder._id){
+        activeUserNotes.push(note)
+      }
+    })
   })
 
   const activeUserToDo = []
@@ -99,31 +100,9 @@ function Notificationlist(){
     }
   })
 
-  function openTask(ind){
-    sessionStorage.setItem('Active', "true")
-    sessionStorage.setItem("ActiveTask", ind)
-    document.location.reload()
-  }
 
-  function Notes({ currentNotes, status }) {
-    return (
-      currentNotes &&
-      currentNotes.map((note, index) => (
-        (note.folder === folder) && (note.status === status) ? (
-          <tr className="table_task" key={index} onClick={() => (openTask(note._id))}>
-            <td className="task_name"><div className="name_div">{note.name}</div></td>
-            {note.desc ? (
-              <td className="table_desc"><div className="desc_div">{note.desc}</div></td>
-            ):(
-              <td className="table_desc"><div className="desc_div">...</div></td>
-            )}
-          </tr>
-        ):("")
-      ))
-    )
-  }
-  
-  function PaginatedNotes({status}) {
+
+  const ActiveNotes = ({status}) => {
   
     return (
       <>
@@ -142,142 +121,29 @@ function Notificationlist(){
             <td className="table_head">Description</td>
           </tr>
 
-          <Notes currentNotes={activeUserNotes} status={status}/>
+          <Notes currentNotes={activeUserNotes} status={status} folder={folder}/>
       </>
     )
   }
 
-  return (
-    <div>
-
-      <AddTask trigger={showAdd} setTrigger={setShowAdd} user={activeEmail} />
-
-      <AddFolder trigger={showFolder} setTrigger={setShowFolder} user={activeEmail} folders={activeUserFolders} />
 
 
-      {sessionStorage.getItem('Active') !== "false" ? (
-        <div>
-          {activeUserNotes.map((note, index) => (
-            <div key={index}>
-              {note._id === sessionStorage.getItem("ActiveTask") ? (
-                <div className="task_background">
-                  <div className="task_main">
-
-                    <div className="task_top">
-                      <div className="opened_task_name">{note.name}</div>
-                      <button className="nav_log_out" style={{marginLeft: "auto"}} onClick={() => (sessionStorage.setItem('Active', "false"), sessionStorage.setItem("ActiveTask", ""), document.location.reload())}>Back</button>
-                    </div>
-
-                    <div style={{height: "4px", backgroundColor: "#ffffff30"}}/>
-
-                    <table className="task_mid">
-                      <tbody>
-                        <tr>
-                          <td style={{verticalAlign: "top", width: "15%", fontSize: "20px"}}>
-
-                            <div style={{padding: "5px 10px"}}>
-
-                              <div style={{display: "inline"}}>
-                                Folder: 
-                                <select defaultValue={note.folder} className="task_selector" style={{marginLeft: "5px", float: "right", marginRight: "10px"}} onChange={(event) => updatefield("folder", event.target.value, note._id)}>
-                                  {activeUserFolders.map((folder, index) => {
-                                    return(
-                                      <option key={index}>{folder.name}</option>
-                                    )
-                                  })}
-                                </select>
-                              </div>
-                              <br/>
-
-                              <div style={{height: "5px"}} />
-
-                              <div style={{display: "inline"}}>
-                                Status: 
-                                <select defaultValue={note.status} className="task_selector" style={{marginLeft: "5px", float: "right", marginRight: "10px"}} onChange={(event) => updatefield("status", event.target.value, note._id)}>
-                                    <option>todo</option>
-                                    <option>inprogress</option>
-                                    <option>done</option>
-                                </select>
-                              </div>
-
-                              <div style={{height: "5px"}} />
-
-                              <div style={{display: "inline"}}>
-                                Active: 
-                                <select defaultValue={note.active} className="task_selector" style={{marginLeft: "5px", float: "right", marginRight: "10px"}} onChange={(event) => updatefield("active", event.target.value, note._id)}>
-                                    <option>active</option>
-                                    <option>inactive</option>
-                                </select>
-                              </div>
-
-                            </div>
-
-                            <div style={{height: "4px", backgroundColor: "#ffffff30"}}/>
-
-                            <div style={{padding: "5px 10px"}}>
-                              <div>Task set</div>
-                              <div>To: {note.finishDate}</div>
-                              <div style={{display: "flex", float: "left"}}>
-                                <DatePicker className="datepicker" selected={date} placeholder="Select day" dateFormat="dd.MM.yyyy"
-                                onChange={(date) => (setDate(date), setFinishDate(date.getDate() + '.' + (date.getMonth() + 1) + '.' + date.getFullYear()))} />
-                                <TimePicker onChange={(time) => (setTime(time))}/>
-                              </div>
-                              {date && time ? (
-                                <button style={{marginTop: "5px", float: "left"}} className="nav_log_out" onClick={() => (addtime(note._id, note.name, note.desc, note.folder, note.status, date, finishDate, time))}>Set date</button>
-                              ):(
-                                <button style={{marginTop: "5px", color: "#ffffff30", float: "left"}} className="nav_log_out" disabled>Set date</button>
-                              )}
-                              <br/>
-                              <div style={{marginTop: "80px"}}>Notification offset</div>
-                              <div>Offset: {note.offset}</div>
-                              <TimePicker onChange={(offset) => (setOffset(offset))}/>
-                              <br/>
-                              {offset ? (
-                                <button style={{marginTop: "5px", float: "left"}} className="nav_log_out" onClick={() => (setoffset(note._id, offset))}>Set offset</button>
-                              ):(
-                                <button style={{marginTop: "5px", color: "#ffffff30", float: "left"}} className="nav_log_out" disabled>Set offset</button>
-                              )}
-                            </div>
-
-                          </td>
-                          <td style={{verticalAlign: "top", borderLeft: "4px solid #ffffff30"}}>
-                            <div className="task_desc">
-                              <div className="task_header" style={{color: "white"}}>Description</div>
-                              {editing ? (
-                                <textarea type="text" rows="20" style={{width: "100%", outline: "none", backgroundColor: "#ffffff05", color: "#ffffff50", border: "0px"}} defaultValue={note.desc} id="newtext"/>
-                              ):(
-                                <div>{note.desc}</div>
-                              )}
-                            </div>
-                            <div style={{padding: "10px 5px"}}>
-                              {editing ? (
-                                <>
-                                  <button className="nav_log_out" style={{marginBottom: "5px"}} onClick={() => setEditingText(false)}>Cancel</button>
-                                  <button className="nav_log_out" style={{marginBottom: "5px", marginRight: '5px'}} onClick={() => (setEditingText(false), updatefield("desc", document.getElementById("newtext").value, note._id))}>Save</button>
-                                </>
-                              ):(
-                                <button className="nav_log_out" style={{marginBottom: "5px"}} onClick={() => setEditingText(true)}>Edit</button>
-                              )}
-                            </div>
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
-
-                  </div>
-                </div>
-              ):(<></>)}
-            </div>
-          ))}
-        </div>
-      ):(<></>)
-    }
+  const TaskTop = ({name}) => {
+    return(
+      <div className="task_top">
+        <div className="opened_task_name">{name}</div>
+        <button className="nav_log_out" style={{marginLeft: "auto"}} onClick={() => (sessionStorage.setItem('Active', "false"), sessionStorage.setItem("ActiveTask", ""), document.location.reload())}>Back</button>
+      </div>
+    )
+  }
 
 
 
+  const TaskContainer = () => {
 
+    return (
       <div className="task_container">
-        {activeUser ? (
+        {activeUser && activeEmail ? (
           <div>
             <div className="space" style={{backgroundColor: "white", zIndex: "10", borderBottomLeftRadius: "40px", borderBottomRightRadius: "40px"}}>
               <div className="tasklist" style={{display: "flex", height: "100%"}}>
@@ -285,7 +151,7 @@ function Notificationlist(){
                 <div style={{marginLeft: "auto", marginTop: "auto", display: "inline-flex"}}>
 
                   <div style={{textAlign: "center"}}>
-                    <select className="selector" onChange={(event) => setFolder(event.target.value)}>
+                    <select defaultValue={folder} className="selector" onChange={(event) => (setFolder(event.target.value))}>
                       {activeUserFolders.map((folder, index) => {
                         return(
                           <option key={index}>{folder.name}</option>
@@ -315,15 +181,15 @@ function Notificationlist(){
                 <tbody>
                       
                   {activeFolderToDoLength? (
-                    <PaginatedNotes status="todo"/>
+                    <ActiveNotes status="todo"/>
                   ):("")}
 
                   {activeFolderInProgressLength ? (
-                    <PaginatedNotes status="inprogress"/>
+                    <ActiveNotes status="inprogress"/>
                   ):("")}
                       
                   {activeFolderDoneLength ? (
-                    <PaginatedNotes status="done"/>
+                    <ActiveNotes status="done"/>
                   ):("")}
 
                   {activeUserNotes.length ? (""):(
@@ -337,18 +203,140 @@ function Notificationlist(){
           </div>
         ):(<div className="not_login" style={{color: "#ffffff50", padding: "10px"}}>Log in to see tasks</div>)}
       </div>
+    )
+  }
+
+
+
+  const [checkDate, setCheckDate] = useState(false)
+
+  function checkTime(ind, date, finishDate, time){
+    const now = new Date()
+    finishDate = finishDate + " | " + time.slice(0,2) + ":" + time.slice(3,5)
+    const noteDate = new Date(date.getFullYear(), date.getMonth(), date.getDate(), time.slice(0,2), time.slice(3,5))
+    if (Date.parse(noteDate) >= Date.parse(now)) {
+      addtime(ind, noteDate, finishDate, time)
+      document.location.reload()
+    }
+    else{
+      setCheckDate(true)
+    }
+  }
+
+
+
+  return (
+    <div>
+
+      <Navbar />
+
+      <AddTask trigger={showAdd} setTrigger={setShowAdd} user={activeEmail} folders={activeUserFolders} />
+
+      <AddFolder trigger={showFolder} setTrigger={setShowFolder} user={activeEmail} folders={activeUserFolders} />
+
+
+      {sessionStorage.getItem('Active') !== "false" ? (
+        <div>
+          {activeUserNotes.map((note, index) => (
+            <div key={index}>
+              {note._id === sessionStorage.getItem("ActiveTask") ? (
+                <div className="task_background">
+                  <div className="task_main">
+
+                    <TaskTop name={note.name}/>
+
+                    <div style={{height: "4px", backgroundColor: "#ffffff30"}}/>
+
+                    <table className="task_mid">
+                      <tbody>
+                        <tr>
+                          <td style={{verticalAlign: "top", width: "15%", fontSize: "20px"}}>
+
+                            <div style={{padding: "5px 10px"}}>
+
+                              <FolderSelector activeUserFolders={activeUserFolders} folder={note.folder} ind={note._id}/>
+                              <br/>
+
+                              <div style={{height: "5px"}} />
+
+                              <StatusSelector status={note.status} ind={note._id}/>
+
+                              <div style={{height: "5px"}} />
+
+                              <ActiveSelector active={note.active} ind={note._id}/>
+
+                            </div>
+
+                            <div style={{height: "4px", backgroundColor: "#ffffff30"}}/>
+
+                            <div style={{padding: "5px 10px"}}>
+                              <div>Task set</div>
+                              <div>To: {note.finishDate}</div>
+                              <div style={{display: "flex", float: "left"}}>
+                                <DatePicker className="datepicker" selected={date} placeholder="Select day" dateFormat="dd.MM.yyyy"
+                                onChange={(date) => (setDate(date), setFinishDate(date.getDate() + '.' + (date.getMonth() + 1) + '.' + date.getFullYear()), setCheckDate(false))} />
+                                <TimePicker onChange={(time) => (setTime(time), setCheckDate(false))}/>
+                              </div>
+                              <ErrorText trigger={checkDate} message={"Wrong date"}/>
+                              {date && time ? (
+                                <button style={{marginTop: "5px", float: "left"}} className="nav_log_out" onClick={() => (checkTime(note._id, date, finishDate, time))}>Set date</button>
+                              ):(
+                                <button style={{marginTop: "5px", color: "#ffffff30", float: "left"}} className="nav_log_out" disabled>Set date</button>
+                              )}
+                              <br/>
+                              <div style={{marginTop: "80px"}}>Notification offset</div>
+                              <div>Offset: {note.offset}</div>
+                              <TimePicker onChange={(offset) => (setOffset(offset))}/>
+                              <br/>
+                              {offset ? (
+                                <button style={{marginTop: "5px", float: "left"}} className="nav_log_out" onClick={() => (settimer(note._id, offset), document.location.reload())}>Set offset</button>
+                              ):(
+                                <button style={{marginTop: "5px", color: "#ffffff30", float: "left"}} className="nav_log_out" disabled>Set offset</button>
+                              )}
+                            </div>
+
+                          </td>
+                          <td style={{verticalAlign: "top", borderLeft: "4px solid #ffffff30"}}>
+                            <div className="task_desc">
+                              <div className="task_header" style={{color: "white"}}>Description</div>
+                              {editing ? (
+                                <textarea type="text" rows="20" style={{width: "100%", outline: "none", backgroundColor: "#ffffff05", color: "#ffffff50", border: "0px"}} defaultValue={note.desc} id="newtext"/>
+                              ):(
+                                <div>{note.desc}</div>
+                              )}
+                            </div>
+                            <div style={{padding: "10px 5px"}}>
+                              {editing ? (
+                                <>
+                                  <button className="nav_log_out" style={{marginBottom: "5px"}} onClick={() => setEditingText(false)}>Cancel</button>
+                                  <button className="nav_log_out" style={{marginBottom: "5px", marginRight: '5px'}} onClick={() => 
+                                    (setEditingText(false), 
+                                    updatefield("desc", document.getElementById("newtext").value, note._id), 
+                                    document.location.reload()
+                                    )}>Save</button>
+                                </>
+                              ):(
+                                <button className="nav_log_out" style={{marginBottom: "5px"}} onClick={() => setEditingText(true)}>Edit</button>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+
+                  </div>
+                </div>
+              ):(<></>)}
+            </div>
+          ))}
+        </div>
+      ):(<></>)
+    }
+
+    <TaskContainer />
+
     </div>
   )
 }
 
 export default Notificationlist
-
-
-
-/* Description Description Description Description Description Description Description 
-Description Description Description Description Description Description Description 
-Description Description Description Description Description Description Description Description 
-Description Description Description Description Description Description Description Description 
-Description Description Description Description Description Description Description Description Description
- Description Description Description Description Description Description Description Description Description 
- Description Description Description Description Description Description */

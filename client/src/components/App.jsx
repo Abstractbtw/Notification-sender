@@ -1,6 +1,5 @@
 import React from "react";
 import {BrowserRouter, Route, Routes} from "react-router-dom"
-import Navbar from "./navbar/Navbar"
 import Registration from "./authorization/Registration"
 import Login from "./authorization/Login"
 import Notificationlist from "./notificationlist/Notificationlist"
@@ -11,7 +10,6 @@ function App() {
   return (
     <BrowserRouter>
       <div className='container'>
-        <Navbar />
           <Routes>
             <Route path="/" element={<Notificationlist /> }/>
             <Route path="/registration" element={<Registration />} />

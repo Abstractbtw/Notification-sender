@@ -1,7 +1,6 @@
 const {Schema, model, ObjectId} = require("mongoose")
 
 const Task = new Schema({
-  user_email: {type: String, required: true},
   name: {type: String, required: true},
   desc: {type: String},
   to: {type: Date},
@@ -11,6 +10,7 @@ const Task = new Schema({
   time: {type: String},
   status: {type: String},
   folder: {type: String},
+  folderId: {type: String},
   active: {type: String}
 })
 
