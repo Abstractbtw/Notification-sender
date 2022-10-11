@@ -1,4 +1,4 @@
-const {Schema, model, ObjectId} = require("mongoose")
+const {Schema, model} = require("mongoose")
 
 const Task = new Schema({
   name: {type: String, required: true},
@@ -11,7 +11,7 @@ const Task = new Schema({
   status: {type: String},
   folder: {type: String},
   folderId: {type: String},
-  active: {type: String}
+  active: {type: Boolean}
 })
 
 module.exports = model('Task', Task)

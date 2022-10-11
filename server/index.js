@@ -1,11 +1,11 @@
 const express = require("express")
-var XMLHttpRequest = require('xhr2')
-const { ObjectId } = require('mongodb')
 const mongoose = require("mongoose")
 const config = require("config")
 const authRouter = require("./routes/router")
 const bodyParser = require("body-parser")
 const corsMiddleware = require("./middleware/cors.middleware")
+const Service = require("./service/service")
+const cronJob = require("./cron/cronJob")
 
 const app = express()
 const PORT = config.get('serverPort')
@@ -18,76 +18,29 @@ app.use("/api/auth", authRouter)
 
 const start = async () => {
   try {
-    await mongoose.connect(config.get("dbUrl"))
+    mongoose.connect(config.get("dbUrl"), (err) => {
+      if (err) throw new Error("Connect error to MongoDB")
+    })
 
     const db = mongoose.connection
 
     const URI_API = config.get("URI_API")
 
-    var CronJob = require('cron').CronJob
-    var job = new CronJob(
-      '* * * * * *',
-      function() {
-        const now = new Date()
+    cronJob(URI_API)
 
-        db.collection("tasks").find({}).toArray(function(err, result) {
-          result.map(task => {
-            if(task.to && (Date.parse(task.to) - task.offsetTime <= Date.parse(now)) && task.active === "active"){
-              db.collection("users").find({}).toArray(function(err, results) {
-                for(user of results){
-                  if(task.user_email === user.email){
-
-                    let xhttp = new XMLHttpRequest()
-
-                    let message = `${task.name}\n\n`
-                      message += `Folder: ${task.folder}\n`
-                      message += `Status: ${task.status}\n\n`
-                      message += `Description: ${task.desc}`
-
-                    xhttp.open("GET", URI_API + "?chat_id=" + user.telegram + "&text=" + message, true)
-                    xhttp.send()
-
-                  }
-                }
-              })
-
-              db.collection("tasks").findOneAndUpdate({
-                _id: ObjectId(task._id)
-              }, {
-                $set: {active: "inactive"}
-              })
-
-              app.get('/');
-
-            }
-          })
-
-        })
-
-      },
-      null,
-      true
-    )
-
-    app.get('/users', (req, res) => {
-      db.collection("users").find({}).toArray(function(err, result) {
-        if (err) throw err
-        res.json(result)
-      })
+    app.get('/users', async (req, res) => {
+      const data = await Service.getUsers() 
+      res.json(data)
     })
 
-    app.get('/folders', (req, res) => {
-      db.collection("folders").find({}).toArray(function(err, result) {
-        if (err) throw err
-        res.json(result)
-      })
+    app.get('/folders', async (req, res) => {
+      const data = await Service.getFolders() 
+      res.json(data)
     })
 
-    app.get('/tasks', (req, res) => {
-      db.collection("tasks").find({}).toArray(function(err, result) {
-        if (err) throw err
-        res.json(result)
-      })
+    app.get('/tasks', async (req, res) => {
+      const data = await Service.getTasks() 
+      res.json(data)
     })
 
     app.use((req, res, next) => {

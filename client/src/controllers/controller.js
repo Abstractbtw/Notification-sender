@@ -34,7 +34,7 @@ export const addnote = async (name, folderId) => {
     const offsetTime = 0
     const status = "todo"
     const folder = "default"
-    const active = "inactive"
+    const active = false
     await axios.post(`${process.env.REACT_APP_API_URL}/api/auth/addtask`, {name, desc, to, finishDate, offset, offsetTime, status, folder, folderId, active})
   } catch (e) {
     console.log(e)

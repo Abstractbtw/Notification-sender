@@ -6,7 +6,8 @@ const { ObjectId } = require('mongodb')
 
 const Service = {
 
-    registration: async (email, name, password, hashPassword, telegram) => {
+    registration: async (req) => {
+        const {email, name, password, hashPassword, telegram} = req
         const user = await User.create({ 
             email,
             name,
@@ -16,12 +17,14 @@ const Service = {
         return user.dataValues
     },
 
-    login: async (email, password) => {
+    login: async (req) => {
+        const {email} = req
         const user = await User.findOne({email})
         return user
     },
 
-    AddTask: async (name, desc, to, finishDate, offset, offsetTime, status, folder, folderId, active) => {
+    addTask: async (req) => {
+        const {name, desc, to, finishDate, offset, offsetTime, status, folder, folderId, active} = req
         const task = await Task.create({ 
             name, 
             desc, 
@@ -37,7 +40,8 @@ const Service = {
         return task.dataValues
     },
 
-    AddFolder: async (foldername, email) => {
+    addFolder: async (req) => {
+        const {foldername, email} = req
         const folder = await Folder.create({ 
             name: foldername, 
             user_email: email 
@@ -45,7 +49,7 @@ const Service = {
         return folder.dataValues
     },
 
-    ChangeField: async (field, user, info, ind) => {
+    changeField: async (field, user, info, ind) => {
         if(field === "folder"){
             const folder = await Folder.findOne({
                 name: info,
@@ -59,33 +63,19 @@ const Service = {
               })
             return task.dataValues
         }
-        if(field === "status"){
+        else{
             const task = await Task.findOneAndUpdate({
                 _id: ObjectId(ind)
               }, {
-                  status: info
-              })
-            return task.dataValues
-        }
-        if(field === "active"){
-            const task = await Task.findOneAndUpdate({
-                _id: ObjectId(ind)
-              }, {
-                  active: info
-              })
-            return task.dataValues
-        }
-        if(field === "desc"){
-            const task = await Task.findOneAndUpdate({
-                _id: ObjectId(ind)
-              }, {
-                  desc: info
+                  [field] : info
               })
             return task.dataValues
         }
     },
 
-    AddTime: async (ind, noteDate, finishDate, time) => {
+    addTime: async (req) => {
+        const {ind, noteDate, finishDate, time} = req
+        console.log(ind)
         const task = await Task.findOneAndUpdate({
             _id: ObjectId(ind)
           },{
@@ -96,7 +86,8 @@ const Service = {
         return task.dataValues
     },
 
-    SetTimer: async (ind, offset, offsetTime) => {
+    setTimer: async (req) => {
+        const {ind, offset, offsetTime} = req
         const task = await Task.findOneAndUpdate({
             _id: ObjectId(ind)
           },{
@@ -105,6 +96,30 @@ const Service = {
           })
         return task.dataValues
     },
+
+    getUsers: async () => {
+        return await User.find({}, {_id: 1, email: 1, name: 1, telegram: 1, password: 1})
+    },
+
+    getFolders: async () => {
+        return await Folder.find({}, {_id: 1, name: 1, user_email: 1})
+    },
+
+    getTasks: async () => {
+        return await Task.find({}, {
+            _id: 1, 
+            name: 1, 
+            desc: 1, 
+            to: 1, 
+            finishDate: 1, 
+            offset: 1, 
+            offsetTime: 1, 
+            time: 1,
+            status: 1,
+            folder: 1,
+            folderId: 1,
+            active: 1})
+    }
 
 }
 

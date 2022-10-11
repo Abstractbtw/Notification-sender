@@ -4,9 +4,9 @@ import {updatefield} from "../../controllers/controller"
 
 const FolderSelector = ({activeUserFolders, folder, ind}) => {
     return(
-      <div style={{display: "inline"}}>
+      <div className="selector_display">
         Folder: 
-        <select defaultValue={folder} className="task_selector" style={{marginLeft: "5px", float: "right", marginRight: "10px"}} onChange={(event) => updatefield("folder", event.target.value, ind)}>
+        <select defaultValue={folder} className="task_selector" onChange={(event) => updatefield("folder", event.target.value, ind)}>
           {activeUserFolders.map((folder, index) => {
             return(
               <option key={index}>{folder.name}</option>
@@ -21,9 +21,9 @@ const FolderSelector = ({activeUserFolders, folder, ind}) => {
 
 const StatusSelector = ({status, ind}) => {
     return(
-      <div style={{display: "inline"}}>
+      <div className="selector_display">
         Status: 
-        <select defaultValue={status} className="task_selector" style={{marginLeft: "5px", float: "right", marginRight: "10px"}} onChange={(event) => updatefield("status", event.target.value, ind)}>
+        <select defaultValue={status} className="task_selector" onChange={(event) => updatefield("status", event.target.value, ind)}>
           <option>todo</option>
           <option>inprogress</option>
           <option>done</option>
@@ -36,9 +36,9 @@ const StatusSelector = ({status, ind}) => {
 
 const ActiveSelector = ({active, ind}) => {
     return(
-      <div style={{display: "inline"}}>
+      <div className="selector_display">
         Active: 
-        <select defaultValue={active} className="task_selector" style={{marginLeft: "5px", float: "right", marginRight: "10px"}} onChange={(event) => updatefield("active", event.target.value, ind)}>
+        <select defaultValue={active ? ("active"):("inactive")} className="task_selector" onChange={(event) => updatefield("active", event.target.value === "active" ? (true):(false), ind)}>
           <option>active</option>
           <option>inactive</option>
           </select>

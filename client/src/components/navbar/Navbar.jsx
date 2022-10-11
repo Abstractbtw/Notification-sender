@@ -1,6 +1,6 @@
 import React from 'react'
 import './navbar.css'
-import {NavLink} from 'react-router-dom'
+import {Link} from 'react-router-dom'
 
 
 function Navbar() {
@@ -18,9 +18,9 @@ function Navbar() {
       <div className="nav_top">
         {!activeUser ? (
           <div className="nav_header">
-            <NavLink to="/login"className="nav_log_out">Log In</NavLink>
+            <Link to="/login" className="nav_log_out">Log In</Link>
             <div className="nav_ver_line">|</div>
-            <NavLink to="/registration"className="nav_log_out">Registration</NavLink>
+            <Link to="/registration" className="nav_log_out">Registration</Link>
           </div>
         ) : (
           <div className="nav_header">

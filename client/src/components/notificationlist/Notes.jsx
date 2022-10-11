@@ -26,4 +26,4 @@ const Notes = ({ currentNotes, status, folder }) => {
     )
 }
 
-export default Notes
+export {Notes}

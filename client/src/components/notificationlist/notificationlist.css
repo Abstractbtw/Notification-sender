@@ -28,6 +28,11 @@
   margin-right: 15%;
 }
 
+.tasklist_top{
+  display: flex;
+  height: 100%;
+}
+
 table tr td.td2:last-child{
   word-break: break-word;
 }
@@ -112,12 +117,19 @@ table tr td.td2:last-child{
   width: 120px;
   text-align: left;
   text-overflow: ellipsis;
+  margin-left: 5px;
+  float: right;
+  margin-right: 10px;
 }
 
 .selector:hover{
   color: white;
   background-color: #1B2749;
   outline: none;
+}
+
+.selector_display{
+  display: inline;
 }
 
 .task_btn:hover{
@@ -205,6 +217,8 @@ table tr td.td2:last-child{
   margin-top: 20px;
   font-size: 25px;
   font-weight: 700;
+  color: #ffffff50;
+  padding: 10px;
 }
 
 .time_btn{
@@ -754,4 +768,113 @@ ul {
 }
 .react-time-picker__button:enabled {
   cursor: pointer;
+}
+
+.icon{
+  text-align: center;
+}
+
+.icon_text{
+  font-size: 12px;
+  cursor: default;
+}
+
+.icon_img{
+  font-size: 20px;
+}
+
+.space_line{
+  height: 5px;
+}
+
+.note_offset{
+  margin-top: 80px;
+}
+
+.task_padding{
+  padding: 5px 10px;
+}
+
+.task_display{
+  display: flex;
+  float: left;
+}
+
+.active_note_status{
+  background-color: #ffffff90;
+  height: 4px;
+  margin: auto;
+}
+
+.status_text{
+  text-align: center;
+}
+
+.status_div{
+  color: #ffffff90;
+  display: flex
+}
+
+.status_space{
+  height: 80px;
+}
+
+.container_space{
+  background-color: white;
+  z-index: 10;
+  border-bottom-left-radius: 40px;
+  border-bottom-right-radius: 40px;
+}
+
+.tasks_margin{
+  width: 150px;
+  margin-top: auto;
+}
+
+.tasks_div{
+  margin-left: auto;
+  margin-top: auto;
+  display: inline-flex;
+}
+
+.select_folder{
+  font-size: 12px;
+  cursor: default;
+}
+
+.not_found{
+  color: white;
+  font-size: 20px;
+}
+
+.bottom_space{
+  height: 300px;
+}
+
+.transparent_line{
+  height: 4px;
+  background-color: #ffffff30;
+}
+
+.left_td{
+  vertical-align: top;
+  width: 15%;
+  font-size: 20px;
+}
+
+.right_td{
+  vertical-align: top;
+  border-left: 4px solid #ffffff30;
+}
+
+.white_color{
+  color: white;
+}
+
+.text_area{
+  width: 100%;
+  outline: none;
+  background-color: #ffffff05;
+  color: #ffffff50;
+  border: 0px;
 }

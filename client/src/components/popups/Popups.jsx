@@ -28,7 +28,7 @@ function AddFolder(props) {
   return (props.trigger) ? (
     <div className="popup_bg">
         <div className="add_task_popup">
-          <div style={{fontSize: "26px", cursor: "default"}}>Add folder</div>
+          <div className="add_folder">Add folder</div>
           <input className="task_input" placeholder="Folder name" onChange={(event) => (setName(event.target.value), setCheckFolder(false))}/>
           <ErrorText trigger={checkFolder} message={"Folder already exists"}/>
           <div style={{height: "48px"}}>
