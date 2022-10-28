@@ -1,6 +1,5 @@
 var CronJob = require('cron').CronJob
 var XMLHttpRequest = require('xhr2')
-const { ObjectId } = require('mongodb')
 const Service = require("../service/service")
 const Message = require("../message/message")
 
@@ -9,32 +8,25 @@ function cronJob (api) {
     '* * * * * *',
     async function() {
 
-      const now = new Date()
+        const notes = await Service.getActiveNotes() 
+        notes.map(async note => {
+          const folder = await Service.getFolderByNote(note.folderId)
+          const user = await Service.getUserByFolder(folder.user_email)
 
-      const tasks = await Service.getTasks()
-      const users = await Service.getUsers()
-      const folders = await Service.getFolders()
-
-        tasks.map(task => {
-          if(task.to && (Date.parse(task.to) - task.offsetTime <= Date.parse(now)) && task.active){
-              users.map(user => {
-                  folders.map(folder => {
-                    if(String(ObjectId(task.folderId)) === String(folder._id)){
-                      if(folder.user_email === user.email){
-
-                        let xhttp = new XMLHttpRequest()
+          let xhttp = new XMLHttpRequest()
     
-                        xhttp.open("GET", api + "?chat_id=" + user.telegram + "&text=" + Message(task.name, task.folder, task.status, task.desc), true)
-                        xhttp.send()
-    
-                      }
-                    }
-                  })
-              })
+          xhttp.open("GET", api + "?chat_id=" + user.telegram + "&text=" + Message(note.name, note.folder, note.status, note.desc), true)
+                        
+          xhttp.send()
 
-            Service.changeField("active", "", false, task._id)
-
+          xhttp.onload = function() {
+            console.log(`Sent: ${xhttp.status}`)
           }
+
+          xhttp.onerror = function() {
+            console.log(`Error: ${xhttp.status}`)
+          }
+          Service.changeField("active", false, note._id)
         })
 
 

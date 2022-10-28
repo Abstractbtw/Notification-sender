@@ -49,37 +49,37 @@ const Service = {
         return folder.dataValues
     },
 
-    changeField: async (field, user, info, ind) => {
-        if(field === "folder"){
-            const folder = await Folder.findOne({
-                name: info,
-                user_email: user
-            })
-            const task = await Task.findOneAndUpdate({
-                _id: ObjectId(ind)
-              }, {
-                  folder: info,
-                  folderId: folder.id
-              })
-            return task.dataValues
-        }
-        else{
-            const task = await Task.findOneAndUpdate({
-                _id: ObjectId(ind)
-              }, {
-                  [field] : info
-              })
-            return task.dataValues
-        }
+    changeField: async (field, info, ind) => {
+      const task = await Task.findOneAndUpdate({
+        _id: ObjectId(ind)
+      }, {
+        [field] : info
+      })
+      return task.dataValues
+    },
+  
+    changeFolder: async (user, info, ind) => {
+      const folder = await Folder.findOne({
+        name: info,
+        user_email: user
+      })
+      const task = await Task.findOneAndUpdate({
+        _id: ObjectId(ind)
+      }, {
+        folder: info,
+        folderId: folder.id
+      })
+      return task.dataValues
     },
 
     addTime: async (req) => {
         const {ind, noteDate, finishDate, time} = req
-        console.log(ind)
+        const oldTime = await Task.findOne({_id: ObjectId(ind)})
+        const newTime = Date.parse(noteDate) - oldTime.offsetTime
         const task = await Task.findOneAndUpdate({
             _id: ObjectId(ind)
           },{
-            to: noteDate,
+            to: newTime,
             finishDate: finishDate,
             time: time
           })
@@ -88,9 +88,12 @@ const Service = {
 
     setTimer: async (req) => {
         const {ind, offset, offsetTime} = req
+        const oldOffset = await Task.findOne({_id: ObjectId(ind)})
+        const newOffset = oldOffset.to + oldOffset.offsetTime - offsetTime
         const task = await Task.findOneAndUpdate({
             _id: ObjectId(ind)
           },{
+            to: newOffset,
             offset: offset,
             offsetTime: offsetTime
           })
@@ -119,7 +122,30 @@ const Service = {
             folder: 1,
             folderId: 1,
             active: 1})
-    }
+    },
+
+    getActiveNotes: async () => {
+      const now = Date.parse(new Date())
+      const notes = await Task.find({
+        active: true,
+        to: {$lte : now}
+      })
+      if(notes){
+        notes.map(async note => {
+          const folder = await Folder.findOne({_id: ObjectId(note.folderId)})
+          const user = await User.findOne({email: folder.user_email})
+        })
+      }
+      return notes
+    },
+
+    getFolderByNote: async (ind) => {
+      return await Folder.findOne({_id: ObjectId(ind)})
+    },
+
+    getUserByFolder: async (email) => {
+      return await User.findOne({email: email})
+    },
 
 }
 

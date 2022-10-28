@@ -30,7 +30,10 @@ router.post('/addfolder', async (req, res) => {
 
 router.put('/changefield/:_id', async (req, res) => {
   const {field, user, info, ind} = req.body
-  Service.changeField(field, user, info, ind).then((task) => {res.json(task)})
+  if(field === "folder"){
+    Service.changeFolder(user, info, ind).then((task) => {res.json(task)})
+  }
+  Service.changeField(field, info, ind).then((task) => {res.json(task)})
 })
 
 

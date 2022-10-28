@@ -22,8 +22,6 @@ const start = async () => {
       if (err) throw new Error("Connect error to MongoDB")
     })
 
-    const db = mongoose.connection
-
     const URI_API = config.get("URI_API")
 
     cronJob(URI_API)
