@@ -26,7 +26,7 @@ function cronJob (api) {
           xhttp.onerror = function() {
             console.log(`Error: ${xhttp.status}`)
           }
-          Service.changeField("active", false, note._id)
+          Service.changeField("active", "Automatically", false, note._id)
         })
 
 

@@ -11,7 +11,12 @@ const Task = new Schema({
   status: {type: String},
   folder: {type: String},
   folderId: {type: String},
-  active: {type: Boolean}
+  active: {type: Boolean},
+  deleted: {type: Boolean},
+  startDate: {type: String},
+  deleteDate: {type: String},
+  updateDate: {type: String},
+  lastUpdate: {type: String},
 })
 
 module.exports = model('Task', Task)

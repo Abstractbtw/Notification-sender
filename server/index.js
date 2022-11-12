@@ -41,6 +41,11 @@ const start = async () => {
       res.json(data)
     })
 
+    app.get('/history', async (req, res) => {
+      const data = await Service.getHistory() 
+      res.json(data)
+    })
+
     app.use((req, res, next) => {
       const err = new Error("Server error")
       err.status = 500

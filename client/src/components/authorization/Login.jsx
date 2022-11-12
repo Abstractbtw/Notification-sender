@@ -2,7 +2,7 @@ import React, {useState, useEffect} from "react"
 import './authorization.css'
 import { login } from '../../controllers/controller'
 import { Link, useNavigate } from 'react-router-dom'
-import ErrorText from '../popups/ErrorText'
+import { ErrorText, LabelText } from '../popups/ErrorText'
 const bcrypt = require("bcryptjs")
 
 const { getUsers } = require("../../service/service")
@@ -17,7 +17,7 @@ const Login = () => {
 
   useEffect(() => {
     getUsers().then((res) => setUsers(res.data))
-  }, []);
+  }, [])
 
   const [checkUser, setCheckUser] = useState(false)
 
@@ -34,8 +34,10 @@ const Login = () => {
     <div className="auth_container">
       <div className="auth">
         <div className="auth_header">Log In</div>
-        <input onChange={(event) => (setEmail(event.target.value), setCheckUser(false))} value={Loginemail} className="auth_input" type="text" placeholder="Enter email"></input>
-        <input onChange={(event) => (setPassword(event.target.value))} value={Userpassword} className="auth_input" type="password" placeholder="Enter password"></input>
+        <LabelText message="Email" />
+        <input onChange={(event) => (setEmail(event.target.value), setCheckUser(false))} value={Loginemail} className="auth_input" type="text" placeholder="Enter email" />
+        <LabelText message="Password" />
+        <input onChange={(event) => (setPassword(event.target.value))} value={Userpassword} className="auth_input" type="password" placeholder="Enter password" />
           <ErrorText trigger={checkUser} message="Invalid email or password" />
         <div className="links">
           {Loginemail && Userpassword ? (

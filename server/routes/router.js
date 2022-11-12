@@ -32,20 +32,26 @@ router.put('/changefield/:_id', async (req, res) => {
   const {field, user, info, ind} = req.body
   if(field === "folder"){
     Service.changeFolder(user, info, ind).then((task) => {res.json(task)})
+  } else {
+    Service.changeField(field, user, info, ind).then((task) => {res.json(task)})
   }
-  Service.changeField(field, info, ind).then((task) => {res.json(task)})
+  Service.updateHistory(field, user, info, ind).then((task) => {res.json(task)})
 })
 
 
 
 router.post('/addtime', async (req, res) => {
-  Service.addTime(req.body).then((task) => {res.json(task)})
+  const {user, ind, noteDate, finishDate, time} = req.body
+  Service.addTime(ind, noteDate, finishDate, time).then((task) => {res.json(task)})
+  Service.updateHistory("finishDate", user, finishDate, ind).then((task) => {res.json(task)})
 })
 
 
 
 router.post('/settimer', async (req, res) => {
-  Service.setTimer(req.body).then((task) => {res.json(task)})
+  const {user, ind, offset, offsetTime} = req.body
+  Service.setTimer(ind, offset, offsetTime).then((task) => {res.json(task)})
+  Service.updateHistory("offset", user, offset, ind).then((task) => {res.json(task)})
 })
 
 

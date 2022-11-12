@@ -36,7 +36,7 @@ const apiMiddleware = {
   registration: async (req, res, next) => {
     try{
 
-      const {email, password} = req.body
+      const {email, password, name} = req.body
       const user = await User.findOne({email})
 
       if(!(validator.validate(email))){
@@ -50,6 +50,10 @@ const apiMiddleware = {
       if((password).length < 3 && (password).length > 12){
         console.log("Password must be longer than 3 and shorter than 12 symbols")
         throw 'Incorrect password'
+      }
+      if(!(/^[a-zA-Z0-9]+$/.test(name))){
+        console.log("Empty name")
+        throw 'Wrong name'
       }
       else{
         console.log("Registration successful")

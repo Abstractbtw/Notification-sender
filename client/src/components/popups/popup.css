@@ -141,6 +141,13 @@
     font-size: 10px;
     width: 100%;
     text-align: left;
+    color: rgb(253, 85, 85);
+  }
+
+  .label_text{
+    font-size: 10px;
+    width: 100%;
+    text-align: left;
     color: white;
   }
 

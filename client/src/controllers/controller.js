@@ -25,17 +25,24 @@ export const login = async (email, password) => {
 
 
 
-export const addnote = async (name, folderId) => {
+export const addnote = async (name, folderId, folderName) => {
   try{
+    const now = new Date()
+
     const desc = ""
     const to = ""
     const finishDate = ""
     const offset = 0
     const offsetTime = 0
     const status = "todo"
-    const folder = "default"
+    const folder = folderName
     const active = false
-    await axios.post(`${process.env.REACT_APP_API_URL}/api/auth/addtask`, {name, desc, to, finishDate, offset, offsetTime, status, folder, folderId, active})
+    const deleted = false
+    const startDate = now.getDate() + '.' + (now.getMonth() + 1) + '.' + now.getFullYear()
+    const deleteDate = ""
+    const updateDate = now.getDate() + '.' + (now.getMonth() + 1) + '.' + now.getFullYear()
+    const lastUpdate = "Task created"
+    await axios.post(`${process.env.REACT_APP_API_URL}/api/auth/addtask`, {name, desc, to, finishDate, offset, offsetTime, status, folder, folderId, active, deleted, startDate, deleteDate, updateDate, lastUpdate})
   } catch (e) {
     console.log(e)
   }
@@ -66,7 +73,8 @@ export const updatefield = async (field, info, ind) => {
 
 export const addtime = async (ind, noteDate, finishDate, time) => {
   try{
-    await axios.post(`${process.env.REACT_APP_API_URL}/api/auth/addtime`, {ind, noteDate, finishDate, time})
+    const user = localStorage.getItem("email")
+    await axios.post(`${process.env.REACT_APP_API_URL}/api/auth/addtime`, {user, ind, noteDate, finishDate, time})
   } catch (e) {
     console.log(e)
   }
@@ -76,8 +84,9 @@ export const addtime = async (ind, noteDate, finishDate, time) => {
 
 export const settimer = async (ind, offset) => {
   try{
+    const user = localStorage.getItem("email")
     const offsetTime = offset.slice(0,2) *  3600000 + offset.slice(3,5) *  60000
-    await axios.post(`${process.env.REACT_APP_API_URL}/api/auth/settimer`, {ind, offset, offsetTime})
+    await axios.post(`${process.env.REACT_APP_API_URL}/api/auth/settimer`, {user, ind, offset, offsetTime})
   } catch (e) {
     console.log(e)
   }

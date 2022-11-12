@@ -1,16 +1,19 @@
 import React, {useState, useEffect} from 'react'
 import './notificationlist.css'
 import "react-datepicker/dist/react-datepicker.css"
+import 'react-select-search/style.css'
 
 import {AddTask, AddFolder} from "../popups/Popups"
-import {Notes} from "./Notes"
-import {FolderIcon, TaskIcon} from "./Icons"
+import {Notes, DeletedNotes} from "./Notes"
+import {HistoryIcon, DeletedIcon, FolderIcon, TaskIcon, SearchIcon} from "./Icons"
 import {TaskTop, TaskLeft} from "./Task"
 
 import {FolderSelector} from "./Selectors"
 import {StatusSelector} from "./Selectors"
 import {ActiveSelector} from "./Selectors"
 import Navbar from "../navbar/Navbar"
+
+import { ErrorText } from '../popups/ErrorText'
 
 import {updatefield} from "../../controllers/controller"
 
@@ -26,6 +29,7 @@ function Notificationlist(){
 
   const [showAdd, setShowAdd] = useState(false)
   const [showFolder, setShowFolder] = useState(false)
+  const [showDeleted, setShowDeleted] = useState(false)
 
   const [editing, setEditingText] = useState(false)
   const [folder, setFolder] = useState("default")
@@ -46,17 +50,23 @@ function Notificationlist(){
   })
 
   const activeUserNotes = []
-  notes.map(note => {
-    activeUserFolders.map(folder => {
-      if(note.folderId === folder._id){
-        activeUserNotes.push(note)
-      }
-    })
-  })
 
   const activeUserToDo = []
   const activeUserInProgress = []
   const activeUserDone = []
+  const activeUserDeleted = []
+
+  notes.map(note => {
+    if(note.deleted){
+      activeUserDeleted.push(note)
+    } else {
+      activeUserFolders.map(folder => {
+        if(note.folderId === folder._id){
+          activeUserNotes.push(note)
+        }
+      })
+    }
+  })
 
   activeUserNotes.map(note => {
     if(note.status === "todo"){
@@ -94,6 +104,34 @@ function Notificationlist(){
 
 
 
+  function CloseTask () {
+    sessionStorage.setItem('Active', "false")
+    sessionStorage.setItem("ActiveTask", "")
+    document.location.reload()
+  }
+
+  const [notExists, setNotExists] = useState(false)
+
+  function searchTask (name) {
+    let exists
+    let openId
+    activeUserNotes.map(note => {
+      if(note.name === name){
+        exists = 1
+        openId = note._id
+      }
+    })
+    if(exists){
+      sessionStorage.setItem('Active', "true")
+      sessionStorage.setItem("ActiveTask", openId)
+      document.location.reload()
+    }else{
+      setNotExists(true)
+    }
+  }
+
+
+
   const ActiveNotes = ({status}) => {
     return (
       <>
@@ -104,6 +142,7 @@ function Notificationlist(){
             {status === "todo" ? (<div className="status_text" style={{width: "68px"}}>To Do</div>):("")}
             {status === "inprogress" ? (<div className="status_text" style={{width: "125px"}}>In Progress</div>):("")}
             {status === "done" ? (<div className="status_text" style={{width: "56px"}}>Done</div>):("")}
+            {status === "deleted" ? (<div className="status_text" style={{width: "100px"}}>Deleted</div>):("")}
             <div className="active_note_status" style={{width: "90%"}} />
           </div></td></tr>
 
@@ -112,9 +151,33 @@ function Notificationlist(){
             <td className="table_head">Description</td>
           </tr>
 
-          <Notes currentNotes={activeUserNotes} status={status} folder={folder}/>
+          {status === "deleted" ? (
+            <DeletedNotes currentNotes={activeUserDeleted}/>
+          ):(
+            <Notes currentNotes={activeUserNotes} status={status} folder={folder}/>
+          )}
       </>
     )
+  }
+
+  const [text, setText] = useState("")
+  const [suggestions, setSuggestions] = useState([])
+
+  const onChangeHandler = (text) => {
+    setText(text)
+    let matches = []
+    if (text.length > 0) {
+      matches = activeUserNotes.filter(task =>{
+        const regex = new RegExp(`${text}`, "gi")
+        return task.name.match(regex)
+      })
+    }
+    setSuggestions(matches)
+  }
+
+  const onSuggestHandler = (text) => {
+    setText(text)
+    setSuggestions([])
   }
 
 
@@ -130,7 +193,29 @@ function Notificationlist(){
                 <div className="main_title colored_text tasks_margin">Tasks</div>
                 <div className="tasks_div">
 
-                  <div style={{textAlign: "center"}}>
+                  <div style={{textAlign: "center", marginRight: "15px"}}>
+                    
+                    <div className="suggestions">
+                      {suggestions && suggestions.map((suggestion, index) => 
+                        <div key={index} className="suggestion" onClick={() => onSuggestHandler(suggestion.name)}>
+                          <div>{suggestion.name}</div>
+                        </div>
+                      )}
+                    </div>
+
+                    <div style={{paddingLeft: "10px"}}>
+                      <ErrorText trigger={notExists} message={"Not found"}/>
+                    </div>
+                    
+                    <div style={{display: "flex"}}>
+                      <input type="text" className="selector" autoFocus="autoFocus" onChange={(event) => (onChangeHandler(event.target.value), setNotExists(false))} value={text} placeholder="Enter name" />
+                      <SearchIcon setTrigger={searchTask} name={text}/>
+                    </div>
+
+                    <div className="select_folder">Search task</div>
+                  </div>
+
+                  <div style={{textAlign: "center", marginRight: "5px", marginTop: "auto"}}>
                     <select defaultValue={folder} className="selector" onChange={(event) => (setFolder(event.target.value))}>
                       {activeUserFolders.map((folder, index) => {
                         return(
@@ -140,6 +225,10 @@ function Notificationlist(){
                     </select>
                     <div className="select_folder">Select folder</div>
                   </div>
+
+                  <HistoryIcon />
+
+                  <DeletedIcon setTrigger={setShowDeleted} active={showDeleted}/>
 
                   <FolderIcon setTrigger={setShowFolder}/>
 
@@ -154,21 +243,25 @@ function Notificationlist(){
                 </thead>
                 <tbody>
                       
-                  {activeFolderToDoLength? (
+                  {activeFolderToDoLength && !showDeleted ? (
                     <ActiveNotes status="todo"/>
                   ):("")}
 
-                  {activeFolderInProgressLength ? (
+                  {activeFolderInProgressLength && !showDeleted ? (
                     <ActiveNotes status="inprogress"/>
                   ):("")}
                       
-                  {activeFolderDoneLength ? (
+                  {activeFolderDoneLength && !showDeleted ? (
                     <ActiveNotes status="done"/>
                   ):("")}
 
                   {activeUserNotes.length ? (""):(
                     <tr className="not_found"><td>No tasks found</td></tr>
                   )}
+
+                  {showDeleted && activeUserDeleted.length ? (
+                    <ActiveNotes status="deleted"/>
+                  ):("")}
 
                 </tbody>
               </table>
@@ -179,12 +272,6 @@ function Notificationlist(){
       </div>
     )
   }
-
-
-
-  
-
-
 
   return (
     <div>
@@ -198,13 +285,13 @@ function Notificationlist(){
 
       {sessionStorage.getItem('Active') !== "false" ? (
         <div>
-          {activeUserNotes.map((note, index) => (
+          {notes.map((note, index) => (
             <div key={index}>
               {note._id === sessionStorage.getItem("ActiveTask") ? (
                 <div className="task_background">
                   <div className="task_main">
 
-                    <TaskTop name={note.name}/>
+                    <TaskTop name={note.name} startDate={note.startDate} updateDate={note.updateDate} info={note.lastUpdate}/>
 
                     <div className="transparent_line"/>
 
@@ -213,24 +300,33 @@ function Notificationlist(){
                         <tr>
                           <td className="left_td">
 
-                            <div style={{padding: "5px 10px"}}>
+                            {note.deleted ? (
+                              <></>
+                            ):(
+                              <>
 
-                              <FolderSelector activeUserFolders={activeUserFolders} folder={note.folder} ind={note._id}/>
-                              <br/>
+                                <div style={{padding: "5px 10px"}}>
 
-                              <div style={{height: "5px"}} />
+                                  <FolderSelector activeUserFolders={activeUserFolders} folder={note.folder} ind={note._id}/>
+                                  <br/>
 
-                              <StatusSelector status={note.status} ind={note._id}/>
+                                  <div style={{height: "5px"}} />
 
-                              <div style={{height: "5px"}} />
+                                  <StatusSelector status={note.status} ind={note._id}/>
 
-                              <ActiveSelector active={note.active} ind={note._id}/>
+                                  <div style={{height: "5px"}} />
 
-                            </div>
+                                  <ActiveSelector active={note.active} ind={note._id}/>
 
-                            <div className="transparent_line"/>
+                                </div>
 
-                            <TaskLeft taskFinishDate={note.finishDate} taskInd={note._id} taskOffset={note.offset}/>
+                                <div className="transparent_line"/>
+
+                                <TaskLeft taskFinishDate={note.finishDate} taskInd={note._id} taskOffset={note.offset} taskDeleted={note.deleted}/>
+
+                              </>
+
+                            )}
 
                           </td>
                           <td className="right_td">
@@ -242,20 +338,30 @@ function Notificationlist(){
                                 <div>{note.desc}</div>
                               )}
                             </div>
-                            <div style={{padding: "10px 5px"}}>
-                              {editing ? (
-                                <>
-                                  <button className="nav_log_out" style={{marginBottom: "5px"}} onClick={() => setEditingText(false)}>Cancel</button>
-                                  <button className="nav_log_out" style={{marginBottom: "5px", marginRight: '5px'}} onClick={() => 
-                                    (setEditingText(false), 
-                                    updatefield("desc", document.getElementById("newtext").value, note._id), 
-                                    document.location.reload()
-                                    )}>Save</button>
-                                </>
-                              ):(
-                                <button className="nav_log_out" style={{marginBottom: "5px"}} onClick={() => setEditingText(true)}>Edit</button>
-                              )}
-                            </div>
+                            {note.deleted ? (
+                              <></>
+                            ):(
+                              <div style={{padding: "10px 5px"}}>
+                                {editing ? (
+                                  <>
+                                    <button className="nav_log_out" style={{marginBottom: "5px"}} onClick={() => setEditingText(false)}>Cancel</button>
+                                    <button className="nav_log_out" style={{marginBottom: "5px", marginRight: '5px'}} onClick={() => 
+                                      (setEditingText(false), 
+                                      updatefield("desc", document.getElementById("newtext").value, note._id), 
+                                      document.location.reload()
+                                      )}>Save and continue</button>
+                                    <button className="nav_log_out" style={{marginBottom: "5px", marginRight: '5px'}} onClick={() => 
+                                      (setEditingText(false), 
+                                      updatefield("desc", document.getElementById("newtext").value, note._id), 
+                                      document.location.reload(),
+                                      CloseTask()
+                                      )}>Save</button>
+                                  </>
+                                ):(
+                                  <button className="nav_log_out" style={{marginBottom: "5px"}} onClick={() => setEditingText(true)}>Edit</button>
+                                )}
+                              </div>
+                            )}
                           </td>
                         </tr>
                       </tbody>

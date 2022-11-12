@@ -27,6 +27,15 @@ export const getFolders = () => {
   })
 }
 
+export const getHistory = () => {
+  return axios.get(`${process.env.REACT_APP_API_URL}/history`, {
+    headers : { 
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    }
+  })
+}
+
 export const saveData = (name, email) => {
   localStorage.setItem('name', name)
   localStorage.setItem('email', email)

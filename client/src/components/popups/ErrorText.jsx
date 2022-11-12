@@ -8,4 +8,11 @@ function ErrorText(props) {
   ) : ""
 }
 
-export default ErrorText
+function LabelText(props) {
+
+  return (
+    <div className="label_text">{props.message}</div>
+  )
+}
+
+export {ErrorText, LabelText}
